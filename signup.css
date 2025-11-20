@@ -1,0 +1,179 @@
+/* =============== Global Styles =============== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #3a0ca3, #4361ee, #4cc9f0);
+    background-size: 300% 300%;
+    animation: gradientShift 15s ease infinite;
+}
+
+/* Background animation */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* =============== Container =============== */
+.signup-container {
+    width: 380px;
+    padding: 40px;
+    border-radius: 20px;
+
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    
+
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    animation: fadeIn 1.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.signup-label {
+    font-size: 26px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 25px;
+}
+
+/* =============== Form Inputs =============== */
+.signup-form input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 8px 0;
+
+    border-radius: 10px;
+    border: none;
+
+    background: rgba(255, 255, 255, 0.3);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: #fff;
+
+    outline: none;
+    font-size: 15px;
+}
+
+.signup-form input::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* =============== Signup Button =============== */
+.signup-button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.signup-button:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-3px);
+}
+
+/* =============== Login Link =============== */
+.login-link {
+    margin-top: 10px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.login-link a {
+    color: #ffe066;
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* =============== Social Buttons =============== */
+.signup-with-socials {
+    margin-top: 20px;
+    color: #fff;
+}
+
+.signup-with-socials p {
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+/* Social button style */
+.signup-with-socials button {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0;
+
+    border-radius: 10px;
+    border: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    font-size: 15px;
+    font-weight: 500;
+
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.signup-with-socials button:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-3px);
+}
+
+.signup-with-socials i {
+    font-size: 20px;
+}
+
+/* =============== Footer =============== */
+.footer {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #fff;
+    opacity: 0.8;
+}
+
+/* =============== Responsiveness =============== */
+@media (max-width: 450px) {
+    .signup-container {
+        width: 90%;
+        padding: 30px;
+    }
+}

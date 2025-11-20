@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Comprehensive budget tracker with operational, strategic, analytics, informational dashboards and live/hybrid markets — themes, currency switcher, backup, and transaction recording." />
+    <meta name="keywords" content="budget, finance, dashboard, analytics, forex, stocks, MMF, transactions, backup, themes" />
+    <meta name="author" content="Shikisha Sweetness" />
+    <title>Budget Tracker Dashboard | Shikisha Sweetness</title>
+
+    <!-- SEO Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Budget Tracker Dashboard",
+      "url": "https://example.com/",
+      "description": "A hybrid offline/online budgeting and market dashboard.",
+      "applicationCategory": "FinanceApplication"
+    }
+    </script>
+
+    <!-- Boxicons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* ==== Core Reset ==== */
+        * { margin:0; padding:0; box-sizing: border-box; }
+        html,body { height:100%; }
+
+        /* ==== Theme Variables (Base) ==== */
+        :root{
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-dark: #0f172a;
+            --bg-mid: #1e293b;
+            --bg-light: #334155;
+            --card-bg: #1e293b;
+            --text-light: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #475569;
+            --accent: rgba(99,102,241,0.12);
+            --surface: linear-gradient(135deg,var(--primary),var(--secondary));
+        }
+
+        /* Preset theme classes will override color variables when applied to body */
+        .theme-blue { --primary: #0ea5e9; --secondary: #0369a1; --accent: rgba(14,165,233,0.12); }
+        .theme-orange { --primary: #fb923c; --secondary: #f97316; --accent: rgba(251,146,60,0.12); }
+        .theme-yellow { --primary: #f59e0b; --secondary: #d97706; --accent: rgba(245,158,11,0.12); }
+        .theme-purple { --primary: #7c3aed; --secondary: #6d28d9; --accent: rgba(124,58,237,0.12); }
+        .theme-white { --bg-dark: #ffffff; --bg-mid: #f8fafc; --card-bg: #ffffff; --text-light:#0b1220; --text-muted:#64748b; --border:#e2e8f0; --accent: rgba(99,102,241,0.06); }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            overflow-x:hidden;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed; left:0; top:0;
+            height:100vh; width:280px;
+            background: var(--bg-mid);
+            border-right:1px solid var(--border);
+            padding:20px; transition: transform .28s ease;
+            z-index:1000; overflow-y:auto;
+        }
+        .sidebar.collapsed{ transform: translateX(-280px); }
+        .logo { display:flex; gap:12px; align-items:center; margin-bottom:28px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+        .logo i{ font-size:2rem; color:var(--primary); }
+        .logo h2{ font-size:1.25rem; background:var(--surface); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        nav .nav-item{ display:flex; gap:12px; align-items:center; padding:12px 14px; margin-bottom:8px; border-radius:10px; color:var(--text-muted); cursor:pointer; transition: all .22s; }
+        nav .nav-item:hover{ background:var(--bg-light); color:var(--text-light); }
+        nav .nav-item.active{ background: linear-gradient(135deg,var(--primary),var(--secondary)); color:white; }
+
+        /* Main content */
+        .main-content { margin-left:280px; padding:28px; transition: margin-left .28s ease; min-height:100vh; }
+        .main-content.expanded{ margin-left:0; }
+
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; gap:12px; flex-wrap:wrap; }
+        .menu-toggle{ display:none; font-size:1.4rem; cursor:pointer; padding:8px; border-radius:8px; background:var(--bg-mid); }
+        .header-left{ display:flex; gap:18px; align-items:center; }
+        .header h1{ font-size:1.9rem; background:var(--surface); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .header-actions{ display:flex; gap:12px; align-items:center; }
+
+        .btn{ padding:10px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:600; display:inline-flex; gap:8px; align-items:center; }
+        .btn-primary{ background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; }
+        .btn-danger{ background: rgba(239,68,68,0.12); color:var(--danger); border:1px solid rgba(239,68,68,0.18); }
+        .btn-ghost{ background:transparent; border:1px solid var(--border); color:var(--text-light); }
+
+        .user-profile{ display:flex; gap:10px; align-items:center; background:var(--bg-mid); padding:8px 12px; border-radius:12px; cursor:pointer; }
+        .user-avatar{ width:40px; height:40px; border-radius:50%; background:var(--surface); display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; }
+
+        /* Dashboard Sections */
+        .dashboard-section{ display:none; animation: fadeIn .35s ease; }
+        .dashboard-section.active{ display:block; }
+        @keyframes fadeIn { from{opacity:0; transform: translateY(16px);} to{opacity:1; transform:none;} }
+
+        /* Stats Grid */
+        .stats-grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-bottom:22px; }
+        .stat-card{ background:var(--card-bg); padding:20px; border-radius:14px; border:1px solid var(--border); position:relative; overflow:hidden; }
+        .stat-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .stat-title{ color:var(--text-muted); font-size:.9rem; }
+        .stat-icon{ width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+        .stat-value{ font-size:1.8rem; font-weight:700; margin-bottom:6px; }
+        .stat-change{ font-size:.85rem; display:flex; gap:6px; align-items:center; }
+
+        /* Charts */
+        .chart-grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(420px,1fr)); gap:18px; margin-bottom:22px; }
+        .chart-card{ background:var(--card-bg); padding:18px; border-radius:12px; border:1px solid var(--border); }
+        .chart-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .chart-container{ height:320px; position:relative; }
+
+        /* Progress bars */
+        .progress-list{ display:flex; flex-direction:column; gap:12px; }
+        .progress-bar{ width:100%; height:12px; background:var(--bg-light); border-radius:999px; overflow:hidden; }
+        .progress-fill{ height:100%; border-radius:999px; transition: width 1s ease; }
+
+        /* Table */
+        .data-table{ background:var(--card-bg); border-radius:12px; border:1px solid var(--border); overflow:hidden; margin-bottom:22px; }
+        .table-header{ padding:16px 18px; border-bottom:1px solid var(--border); }
+        table{ width:100%; border-collapse:collapse; }
+        th, td{ padding:12px 16px; text-align:left; }
+        th{ color:var(--text-muted); font-size:.82rem; text-transform:uppercase; letter-spacing:.6px; }
+        tr{ border-bottom:1px solid var(--border); }
+        tr:last-child{ border-bottom: none; }
+        tbody tr:hover{ background:var(--bg-light); }
+
+        .badge{ padding:6px 10px; border-radius:8px; font-weight:700; font-size:.78rem; display:inline-block; }
+        .badge-success{ background: rgba(16,185,129,0.12); color:var(--success); }
+        .badge-warning{ background: rgba(245,158,11,0.12); color:var(--warning); }
+        .badge-danger{ background: rgba(239,68,68,0.12); color:var(--danger); }
+        .badge-info{ background: rgba(59,130,246,0.12); color:var(--info); }
+
+        /* Quick Actions */
+        .quick-actions{ display:grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:22px; }
+        .action-card{ background:var(--card-bg); padding:16px; border-radius:10px; border:1px solid var(--border); text-align:center; cursor:pointer; transition:all .18s; }
+        .action-card i{ font-size:2rem; margin-bottom:8px; color:var(--primary); }
+        .action-card:hover{ transform:translateY(-4px); border-color:var(--primary); }
+
+        /* Modal */
+        .modal{ display:none; position:fixed; inset:0; background: rgba(2,6,23,0.6); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:1500; padding:16px; }
+        .modal.active{ display:flex; }
+        .modal-content{ width:100%; max-width:720px; background:var(--card-bg); border-radius:12px; padding:18px; border:1px solid var(--border); color:var(--text-light); box-shadow:0 12px 40px rgba(2,6,23,0.6); }
+        .modal-grid{ display:grid; gap:12px; grid-template-columns: repeat(2,1fr); }
+        .modal-grid.full { grid-template-columns: 1fr; }
+        .input, input, select, textarea{ width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text-light); }
+        label{ font-size:.86rem; color:var(--text-muted); margin-bottom:6px; display:block; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .chart-grid{ grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-280px); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left:0; }
+            .menu-toggle { display:block; }
+            .modal-grid{ grid-template-columns: 1fr; }
+        }
+
+        /* extra small */
+        @media (max-width:420px) {
+            .header h1{ font-size:1.1rem; }
+            .logo h2{ font-size:1rem; }
+        }
+
+        /* small helper classes */
+        .muted { color:var(--text-muted); font-size:.9rem; }
+        .flex { display:flex; align-items:center; gap:10px; }
+        .spacer { flex:1; }
+        .right { text-align:right; }
+
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class='bx bx-wallet'></i>
+            <h2>Budget Tracker</h2>
+        </div>
+
+        <nav>
+            <div class="nav-item active" data-section="operational"><i class='bx bx-tachometer'></i><span>Operational</span></div>
+            <div class="nav-item" data-section="strategic"><i class='bx bx-target-lock'></i><span>Strategic</span></div>
+            <div class="nav-item" data-section="analytics"><i class='bx bx-bar-chart-alt-2'></i><span>Analytics</span></div>
+            <div class="nav-item" data-section="informational"><i class='bx bx-info-circle'></i><span>Informational</span></div>
+            <div class="nav-item" data-section="markets"><i class='bx bx-stats'></i><span>Markets</span></div>
+            <div class="nav-item" data-section="settings"><i class='bx bx-cog'></i><span>Settings</span></div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <i class='bx bx-menu menu-toggle' id="menuToggle"></i>
+                <h1>Budget Dashboard</h1>
+                <div class="muted">Currency: <strong id="currencyLabel">USD</strong></div>
+            </div>
+
+            <div class="header-actions">
+                <button id="addTransactionBtn" class="btn btn-primary"><i class='bx bx-plus'></i> Add Transaction</button>
+                <button id="openMarketsBtn" class="btn btn-ghost"><i class='bx bx-globe'></i> Open Markets</button>
+                <div class="user-profile">
+                    <div class="user-avatar">SS</div>
+                    <div>
+                        <div>Shikisha</div>
+                        <div class="muted">Admin</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Operational -->
+        <section class="dashboard-section active" id="operational">
+            <div class="alert-box" style="padding:12px 16px; border-radius:10px; margin-bottom:14px; background: rgba(245,158,11,0.08); border:1px solid var(--warning); color:var(--warning);">
+                <i class='bx bx-error-circle' style="font-size:1.25rem; margin-right:8px;"></i>
+                <span><strong>Budget Alert:</strong> You've spent 85% of your monthly food budget.</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Balance</span>
+                        <div class="stat-icon" style="background: rgba(16,185,129,0.12); color:var(--success);"><i class='bx bx-wallet'></i></div>
+                    </div>
+                    <div class="stat-value" id="totalBalance">$12,458.50</div>
+                    <div class="stat-change positive"><i class='bx bx-up-arrow-alt'></i> +12.5% from last month</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Income</span>
+                        <div class="stat-icon" style="background: rgba(59,130,246,0.12); color:var(--info);"><i class='bx bx-trending-up'></i></div>
+                    </div>
+                    <div class="stat-value" id="totalIncome">$8,500.00</div>
+                    <div class="stat-change positive"><i class='bx bx-up-arrow-alt'></i> +5.2% this month</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Expenses</span>
+                        <div class="stat-icon" style="background: rgba(239,68,68,0.12); color:var(--danger);"><i class='bx bx-trending-down'></i></div>
+                    </div>
+                    <div class="stat-value" id="totalExpenses">$4,235.80</div>
+                    <div class="stat-change negative"><i class='bx bx-down-arrow-alt'></i> +8.3% this month</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Savings</span>
+                        <div class="stat-icon" style="background: rgba(139,92,246,0.12); color:var(--secondary);"><i class='bx bx-money'></i></div>
+                    </div>
+                    <div class="stat-value" id="totalSavings">$4,264.20</div>
+                    <div class="stat-change positive"><i class='bx bx-up-arrow-alt'></i> 50.2% savings rate</div>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <div class="chart-header"><h3 class="muted">Monthly Cashflow</h3></div>
+                    <div class="chart-container"><canvas id="cashflowChart"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header"><h3 class="muted">Expense Breakdown</h3></div>
+                    <div class="chart-container"><canvas id="expenseChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header"><h3>Recent Transactions</h3></div>
+                <table>
+                    <thead>
+                        <tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Status</th></tr>
+                    </thead>
+                    <tbody id="transactionsTable"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Strategic -->
+        <section class="dashboard-section" id="strategic">
+            <div style="margin-bottom:12px;" class="alert-box" >
+                <i class='bx bx-info-circle' style="font-size:1.2rem; margin-right:8px; color:var(--info)"></i>
+                <span><strong>Goal Update:</strong> You're on track to reach your emergency fund goal in 3 months!</span>
+            </div>
+
+            <div class="quick-actions">
+                <div class="action-card" id="setGoal"><i class='bx bx-target-lock'></i><h4>Set New Goal</h4><p class="muted">Create financial goals</p></div>
+                <div class="action-card" id="investPlan"><i class='bx bx-line-chart'></i><h4>Investment Plan</h4><p class="muted">Review investments</p></div>
+                <div class="action-card" id="budgetReview"><i class='bx bx-calendar'></i><h4>Budget Review</h4><p class="muted">Monthly planning</p></div>
+                <div class="action-card" id="riskAnalysis"><i class='bx bx-shield'></i><h4>Risk Analysis</h4><p class="muted">Financial security</p></div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <div class="chart-header"><h3 class="muted">Financial Goals Progress</h3></div>
+                    <div class="progress-list" style="padding:8px 0;">
+                        <div style="margin-bottom:10px;">
+                            <div class="flex"><span>Emergency Fund</span><span class="spacer"></span><strong>$8,500 / $10,000</strong></div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:85%; background:var(--success)"></div></div>
+                        </div>
+                        <div style="margin-bottom:10px;">
+                            <div class="flex"><span>Vacation Fund</span><span class="spacer"></span><strong>$3,200 / $5,000</strong></div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:64%; background:var(--info)"></div></div>
+                        </div>
+                        <div style="margin-bottom:10px;">
+                            <div class="flex"><span>New Car</span><span class="spacer"></span><strong>$12,000 / $30,000</strong></div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:40%; background:var(--warning)"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex"><span>Retirement</span><span class="spacer"></span><strong>$45,000 / $500,000</strong></div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:9%; background:var(--secondary)"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header"><h3 class="muted">Net Worth Growth</h3></div>
+                    <div class="chart-container"><canvas id="networthChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header"><h3 class="muted">Budget vs Actual (Current Month)</h3></div>
+                <div class="chart-container"><canvas id="budgetCompareChart"></canvas></div>
+            </div>
+        </section>
+
+        <!-- Analytics -->
+        <section class="dashboard-section" id="analytics">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Avg Monthly Spending</span><div class="stat-icon" style="background: rgba(245,158,11,0.12); color:var(--warning)"><i class='bx bx-chart'></i></div></div>
+                    <div class="stat-value" id="avgSpending">$4,125.50</div>
+                    <div class="stat-change negative"><i class='bx bx-down-arrow-alt'></i> -3.2% vs 6mo avg</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Largest Expense</span><div class="stat-icon" style="background: rgba(239,68,68,0.12); color:var(--danger)"><i class='bx bx-home'></i></div></div>
+                    <div class="stat-value" id="largestExpense">$1,200</div>
+                    <div class="stat-change">Housing (Rent)</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Spending Trend</span><div class="stat-icon" style="background: rgba(16,185,129,0.12); color:var(--success)"><i class='bx bx-trending-down'></i></div></div>
+                    <div class="stat-value">Decreasing</div>
+                    <div class="stat-change positive"><i class='bx bx-up-arrow-alt'></i> Good progress!</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header"><span class="stat-title">Days to Next Goal</span><div class="stat-icon" style="background: rgba(59,130,246,0.12); color:var(--info)"><i class='bx bx-calendar'></i></div></div>
+                    <div class="stat-value">87 days</div>
+                    <div class="stat-change">Emergency Fund</div>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-card"><div class="chart-header"><h3 class="muted">Spending Trends (6 Months)</h3></div><div class="chart-container"><canvas id="trendChart"></canvas></div></div>
+                <div class="chart-card"><div class="chart-header"><h3 class="muted">Category Analysis</h3></div><div class="chart-container"><canvas id="categoryChart"></canvas></div></div>
+            </div>
+
+            <div class="chart-card"><div class="chart-header"><h3 class="muted">Income vs Expenses Over Time</h3></div><div class="chart-container"><canvas id="incomeExpenseChart"></canvas></div></div>
+        </section>
+
+        <!-- Informational -->
+        <section class="dashboard-section" id="informational">
+            <div class="quick-actions">
+                <div class="action-card"><i class='bx bx-book-open'></i><h4>Budget Guide</h4><p class="muted">Learn budgeting basics</p></div>
+                <div class="action-card"><i class='bx bx-download'></i><h4>Export Data</h4><p class="muted">Download reports</p></div>
+                <div class="action-card"><i class='bx bx-help-circle'></i><h4>Help Center</h4><p class="muted">Get support</p></div>
+                <div class="action-card"><i class='bx bx-bell'></i><h4>Notifications</h4><p class="muted">Manage alerts</p></div>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header"><h3>Budget Categories Overview</h3></div>
+                <table>
+                    <thead><tr><th>Category</th><th>Budget</th><th>Spent</th><th>Remaining</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <tr><td><i class='bx bx-home'></i> Housing</td><td>$1,200</td><td>$1,200</td><td>$0</td><td><span class="badge badge-success">On Track</span></td></tr>
+                        <tr><td><i class='bx bx-food-tag'></i> Food</td><td>$500</td><td>$425</td><td>$75</td><td><span class="badge badge-warning">85% Used</span></td></tr>
+                        <tr><td><i class='bx bx-car'></i> Transportation</td><td>$300</td><td>$180</td><td>$120</td><td><span class="badge badge-success">Good</span></td></tr>
+                        <tr><td><i class='bx bx-heart'></i> Healthcare</td><td>$250</td><td>$140</td><td>$110</td><td><span class="badge badge-success">On Track</span></td></tr>
+                        <tr><td><i class='bx bx-dumbbell'></i> Fitness</td><td>$120</td><td>$60</td><td>$60</td><td><span class="badge badge-success">Healthy</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Markets (New Page) -->
+        <section class="dashboard-section" id="markets">
+            <div style="display:flex; gap:12px; align-items:center; margin-bottom:14px;">
+                <h2 style="margin:0;">Markets</h2>
+                <div class="muted">Live/hybrid FX, MMF & Stocks</div>
+                <div class="spacer"></div>
+                <button id="refreshMarkets" class="btn btn-ghost"><i class='bx bx-refresh'></i> Refresh</button>
+            </div>
+
+            <!-- FX widget -->
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <div class="chart-header"><h3 class="muted">Foreign Exchange (FX)</h3></div>
+                    <div style="margin-bottom:12px;">
+                        <label class="muted">Base Currency</label>
+                        <select id="fxBase" class="input" style="max-width:200px;">
+                            <option value="USD">USD</option>
+                            <option value="KES">KES</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                        </select>
+                    </div>
+                    <div class="chart-container"><canvas id="fxChart"></canvas></div>
+                    <div style="margin-top:12px;">
+                        <table style="width:100%;"><thead><tr><th>Pair</th><th>Rate</th><th>Change</th></tr></thead><tbody id="fxTable"></tbody></table>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header"><h3 class="muted">Short-Term MMF Snapshot</h3></div>
+                    <div style="margin-bottom:12px;">
+                        <div class="muted">Simulated MMF yields for strategy planning (live when available)</div>
+                    </div>
+                    <div style="margin-top:8px;">
+                        <table style="width:100%;"><thead><tr><th>Fund</th><th>Yield (7d)</th><th>Action</th></tr></thead><tbody id="mmfTable"></tbody></table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stocks widget -->
+            <div class="chart-card" style="margin-top:12px;">
+                <div class="chart-header"><h3 class="muted">Stocks (Simulated / Live)</h3></div>
+                <div style="display:flex; gap:12px; align-items:center; margin-bottom:10px;">
+                    <input id="stockSymbol" class="input" placeholder="Ticker (e.g. AAPL)" style="max-width:180px;" />
+                    <button id="fetchStock" class="btn btn-primary">Fetch</button>
+                    <div class="spacer"></div>
+                    <div id="stockStatus" class="muted">Status: <span id="stockOnline">Online</span></div>
+                </div>
+                <div class="chart-container"><canvas id="stockChart"></canvas></div>
+                <div style="margin-top:12px;">
+                    <table style="width:100%;"><thead><tr><th>Ticker</th><th>Price</th><th>Change</th><th>Action</th></tr></thead><tbody id="stockTable"></tbody></table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings -->
+        <section class="dashboard-section" id="settings">
+            <div class="data-table">
+                <div class="table-header"><h3>Settings & Preferences</h3></div>
+                <div style="padding:16px;">
+                    <table style="width:100%;">
+                        <tbody>
+                            <tr>
+                                <td style="width:40%"><strong>Theme</strong><div class="muted">Switch visual theme</div></td>
+                                <td style="width:40%">
+                                    <select id="themeSelect" class="input" style="max-width:320px;">
+                                        <option value="dark">Default (Dark)</option>
+                                        <option value="blue">Blue</option>
+                                        <option value="orange">Orange</option>
+                                        <option value="yellow">Yellow</option>
+                                        <option value="purple">Purple</option>
+                                        <option value="white">Light (White)</option>
+                                    </select>
+                                </td>
+                                <td><button id="applyTheme" class="btn btn-primary">Apply</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Currency</strong><div class="muted">Global currency and KES support</div></td>
+                                <td>
+                                    <select id="currencySelect" class="input" style="max-width:320px;">
+                                        <option value="USD">USD ($)</option>
+                                        <option value="KES">KES (KSh)</option>
+                                        <option value="EUR">EUR (€)</option>
+                                        <option value="GBP">GBP (£)</option>
+                                        <option value="JPY">JPY (¥)</option>
+                                        <option value="NGN">NGN (₦)</option>
+                                    </select>
+                                </td>
+                                <td><button id="applyCurrency" class="btn btn-primary">Switch</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Notifications</strong><div class="muted">Wire to backend endpoint for push/service</div></td>
+                                <td>
+                                    <select id="notifSelect" class="input" style="max-width:320px;">
+                                        <option value="enabled">Enabled</option>
+                                        <option value="disabled">Disabled</option>
+                                    </select>
+                                </td>
+                                <td><button id="applyNotif" class="btn btn-primary">Save</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Backup</strong><div class="muted">Backup local data or send to backend</div></td>
+                                <td>
+                                    <div class="muted">Local JSON export + remote backup (placeholder)</div>
+                                </td>
+                                <td><button id="backupBtn" class="btn btn-primary">Backup Now</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== Modals: Add Transaction & Confirmation ===== -->
+    <div id="transactionModal" class="modal" aria-hidden="true">
+        <div class="modal-content" role="dialog" aria-labelledby="txTitle">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 id="txTitle">Add Transaction</h3>
+                <button id="closeTransaction" class="btn btn-ghost"><i class='bx bx-x'></i></button>
+            </div>
+
+            <div class="modal-grid" style="gap:12px;">
+                <div>
+                    <label>Date</label>
+                    <input type="date" id="tDate" class="input" />
+                </div>
+                <div>
+                    <label>Time</label>
+                    <input type="time" id="tTime" class="input" />
+                </div>
+                <div>
+                    <label>Description</label>
+                    <input type="text" id="tDesc" class="input" placeholder="Dinner, Salary, Freelance..." />
+                </div>
+                <div>
+                    <label>Payee / Payer</label>
+                    <input type="text" id="tParty" class="input" placeholder="Who paid / who received" />
+                </div>
+                <div>
+                    <label>Category</label>
+                    <select id="tCat" class="input">
+                        <option>Food</option><option>Housing</option><option>Transport</option>
+                        <option>Fitness</option><option>Healthcare</option><option>Income</option>
+                        <option>Investment</option><option>Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Method</label>
+                    <select id="tMethod" class="input">
+                        <option>Cash</option><option>Card</option><option>Mobile Money</option><option>Bank Transfer</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Amount (<span id="txnCurrencyLabel">USD</span>)</label>
+                    <input type="number" step="0.01" id="tAmt" class="input" placeholder="0.00" />
+                </div>
+                <div>
+                    <label>Status</label>
+                    <select id="tStatus" class="input"><option>Completed</option><option>Pending</option><option>Planned</option></select>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label>Notes</label>
+                    <textarea id="tNotes" class="input" rows="3" placeholder="Optional notes"></textarea>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px; margin-top:14px; justify-content:flex-end;">
+                <button id="saveTransaction" class="btn btn-primary">Save Transaction</button>
+                <button id="saveAndRepeat" class="btn btn-ghost">Save & Add Another</button>
+                <button id="cancelTransaction" class="btn btn-danger">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple inline script handles state, charts, markets, and settings -->
+    <script>
+    (function(){
+        /* ====== App State ====== */
+        const state = {
+            transactions: [],
+            currency: localStorage.getItem('bt_currency') || 'USD',
+            fxRates: null, // holds latest rates relative to base
+            theme: localStorage.getItem('bt_theme') || 'dark',
+            notif: localStorage.getItem('bt_notif') || 'enabled',
+            markets: {
+                fx: null,
+                mmf: null,
+                stocks: {}
+            }
+        };
+
+        /* ====== DOM Refs ====== */
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('.dashboard-section');
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menuToggle');
+        const mainContent = document.getElementById('mainContent');
+        const addTransactionBtn = document.getElementById('addTransactionBtn');
+        const transactionModal = document.getElementById('transactionModal');
+        const closeTransaction = document.getElementById('closeTransaction');
+        const cancelTransaction = document.getElementById('cancelTransaction');
+        const saveTransaction = document.getElementById('saveTransaction');
+        const saveAndRepeat = document.getElementById('saveAndRepeat');
+        const transactionsTable = document.getElementById('transactionsTable');
+        const currencyLabel = document.getElementById('currencyLabel');
+        const txnCurrencyLabel = document.getElementById('txnCurrencyLabel');
+        const themeSelect = document.getElementById('themeSelect');
+        const applyTheme = document.getElementById('applyTheme');
+        const currencySelect = document.getElementById('currencySelect');
+        const applyCurrency = document.getElementById('applyCurrency');
+        const notifSelect = document.getElementById('notifSelect');
+        const applyNotif = document.getElementById('applyNotif');
+        const backupBtn = document.getElementById('backupBtn');
+        const fxBase = document.getElementById('fxBase');
+        const fxTable = document.getElementById('fxTable');
+        const mmfTable = document.getElementById('mmfTable');
+        const refreshMarkets = document.getElementById('refreshMarkets');
+        const openMarketsBtn = document.getElementById('openMarketsBtn');
+        const fetchStockBtn = document.getElementById('fetchStock');
+        const stockSymbolInput = document.getElementById('stockSymbol');
+        const stockTable = document.getElementById('stockTable');
+        const stockStatus = document.getElementById('stockOnline');
+
+        /* ====== Init ====== */
+        function init(){
+            // Apply saved theme
+            applyThemeValue(state.theme);
+
+            // Apply currency label
+            setCurrency(state.currency);
+
+            // Load transactions from storage
+            const savedTx = localStorage.getItem('bt_transactions');
+            if(savedTx) {
+                try{ state.transactions = JSON.parse(savedTx) || []; } catch(e){ state.transactions = []; }
+            }
+
+            renderTransactions();
+            updateTotals();
+
+            // Load FX on start (try live; fallback to mock)
+            loadFxRates(state.currency).then(r => {
+                state.fxRates = r;
+                renderFxUI();
+                updateCharts();
+            });
+
+            // Populate MMF mock
+            state.markets.mmf = getMockMMF();
+            renderMMF();
+
+            // Setup charts
+            setupCharts();
+
+            // Event bindings
+            bindEvents();
+
+            // Prefill settings selects
+            themeSelect.value = state.theme === 'dark' ? 'dark' : state.theme;
+            currencySelect.value = state.currency;
+            notifSelect.value = state.notif;
+        }
+
+        /* ====== Navigation ====== */
+        navItems.forEach(item => item.addEventListener('click', () => {
+            navItems.forEach(n => n.classList.remove('active'));
+            item.classList.add('active');
+            const target = item.getAttribute('data-section');
+            sections.forEach(s => s.id === target ? s.classList.add('active') : s.classList.remove('active'));
+            if(target === 'markets') { loadMarkets(); }
+        }));
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('expanded');
+        });
+
+        openMarketsBtn.addEventListener('click', () => {
+            document.querySelector('.nav-item[data-section="markets"]').click();
+            window.scrollTo({top:0, behavior:'smooth'});
+        });
+
+        /* ====== Transaction Modal & Logic ====== */
+        addTransactionBtn.addEventListener('click', () => { openModal(transactionModal); });
+
+        closeTransaction.addEventListener('click', () => closeModal(transactionModal));
+        cancelTransaction.addEventListener('click', () => closeModal(transactionModal));
+
+        function openModal(el){ el.classList.add('active'); el.setAttribute('aria-hidden','false'); }
+        function closeModal(el){ el.classList.remove('active'); el.setAttribute('aria-hidden','true'); clearTxForm(); }
+
+        function readTxForm(){
+            const date = document.getElementById('tDate').value || new Date().toISOString().slice(0,10);
+            const time = document.getElementById('tTime').value || new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+            const desc = document.getElementById('tDesc').value.trim();
+            const party = document.getElementById('tParty').value.trim();
+            const cat = document.getElementById('tCat').value;
+            const method = document.getElementById('tMethod').value;
+            const amt = parseFloat(document.getElementById('tAmt').value);
+            const status = document.getElementById('tStatus').value;
+            const notes = document.getElementById('tNotes').value.trim();
+
+            return { date, time, desc, party, cat, method, amt, status, notes, currency: state.currency, id: Date.now() };
+        }
+
+        function validateTx(tx){
+            if(!tx.desc) return "Description required";
+            if(isNaN(tx.amt) || tx.amt === 0) return "Amount must be non-zero";
+            return null;
+        }
+
+        saveTransaction.addEventListener('click', () => {
+            const tx = readTxForm();
+            const err = validateTx(tx);
+            if(err){ alert(err); return; }
+            state.transactions.unshift(tx);
+            persistTx();
+            renderTransactions();
+            updateTotals();
+            closeModal(transactionModal);
+        });
+
+        saveAndRepeat.addEventListener('click', () => {
+            const tx = readTxForm();
+            const err = validateTx(tx);
+            if(err){ alert(err); return; }
+            state.transactions.unshift(tx);
+            persistTx();
+            renderTransactions();
+            updateTotals();
+            // clear only inputs except date/time to speed multiple entries
+            document.getElementById('tDesc').value = '';
+            document.getElementById('tParty').value = '';
+            document.getElementById('tAmt').value = '';
+            document.getElementById('tNotes').value = '';
+            document.getElementById('tStatus').value = 'Completed';
+            document.getElementById('tCat').value = 'Other';
+            document.getElementById('tMethod').value = 'Cash';
+            document.getElementById('tDesc').focus();
+        });
+
+        function persistTx(){
+            localStorage.setItem('bt_transactions', JSON.stringify(state.transactions));
+        }
+
+        function clearTxForm(){
+            const els = ['tDate','tTime','tDesc','tParty','tCat','tMethod','tAmt','tStatus','tNotes'];
+            els.forEach(id => { const e=document.getElementById(id); if(e) e.value = ''; });
+            // default date = today
+            const today = new Date().toISOString().slice(0,10);
+            document.getElementById('tDate').value = today;
+            document.getElementById('tTime').value = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+        }
+
+        function renderTransactions(){
+            transactionsTable.innerHTML = '';
+            state.transactions.slice(0,50).forEach(t => {
+                const amountSign = t.amt < 0 ? '-' : '+';
+                const amtDisplay = `${amountSign}${formatCurrency(Math.abs(t.amt), state.currency)}`;
+                const badgeClass = t.status === 'Completed' ? 'badge-success' : t.status === 'Pending' ? 'badge-warning' : 'badge-info';
+                transactionsTable.insertAdjacentHTML('beforeend', `
+                    <tr>
+                        <td>${escapeHtml(t.date)} ${escapeHtml(t.time || '')}</td>
+                        <td>${escapeHtml(t.desc)}</td>
+                        <td>${escapeHtml(t.cat)}</td>
+                        <td style="color:${t.amt < 0 ? 'var(--danger)':'var(--success)'}">${amtDisplay}</td>
+                        <td><span class="badge ${badgeClass}">${escapeHtml(t.status)}</span></td>
+                    </tr>
+                `);
+            });
+        }
+
+        function updateTotals(){
+            // Simple totals (income positive, expenses negative)
+            let income=0, expenses=0;
+            state.transactions.forEach(t => { if(t.amt>0) income+=t.amt; else expenses+=t.amt; });
+            const balance = income + expenses;
+            document.getElementById('totalIncome').textContent = formatCurrency(income, state.currency);
+            document.getElementById('totalExpenses').textContent = formatCurrency(Math.abs(expenses), state.currency);
+            document.getElementById('totalBalance').textContent = formatCurrency(balance, state.currency);
+            document.getElementById('totalSavings').textContent = formatCurrency(Math.max(0, income + expenses/2), state.currency);
+            // avg spending and largest expense quick
+            const spends = state.transactions.filter(t=>t.amt<0).map(t=>Math.abs(t.amt));
+            const avg = spends.length ? (spends.reduce((a,b)=>a+b,0)/spends.length) : 0;
+            document.getElementById('avgSpending').textContent = formatCurrency(avg, state.currency);
+            const largest = spends.length ? Math.max(...spends) : 0;
+            document.getElementById('largestExpense').textContent = formatCurrency(largest, state.currency);
+        }
+
+        /* ====== Utilities ====== */
+        function escapeHtml(s){ if(!s && s!==0) return ''; return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+        function formatCurrency(amount, cur){
+            // Use Intl if available
+            try {
+                return new Intl.NumberFormat(undefined, { style: 'currency', currency: cur, maximumFractionDigits: 2 }).format(amount);
+            } catch (e) {
+                // fallback simple
+                return (cur + ' ' + amount.toFixed(2));
+            }
+        }
+
+        /* ====== Themes & Settings ====== */
+        function applyThemeValue(theme){
+            // clear previous theme classes
+            document.body.classList.remove('theme-blue','theme-orange','theme-yellow','theme-purple','theme-white');
+            if(theme === 'blue') document.body.classList.add('theme-blue');
+            if(theme === 'orange') document.body.classList.add('theme-orange');
+            if(theme === 'yellow') document.body.classList.add('theme-yellow');
+            if(theme === 'purple') document.body.classList.add('theme-purple');
+            if(theme === 'white') document.body.classList.add('theme-white');
+            // store
+            state.theme = theme;
+            localStorage.setItem('bt_theme', theme);
+        }
+
+        applyTheme.addEventListener('click', () => {
+            const t = themeSelect.value;
+            applyThemeValue(t);
+        });
+
+        applyCurrency.addEventListener('click', () => {
+            const cur = currencySelect.value;
+            setCurrency(cur);
+            // reload FX rates for new currency
+            loadFxRates(cur).then(r=>{
+                state.fxRates = r;
+                renderFxUI();
+                updateCharts();
+            });
+        });
+
+        function setCurrency(cur){
+            state.currency = cur;
+            localStorage.setItem('bt_currency', cur);
+            currencyLabel.textContent = cur;
+            txnCurrencyLabel.textContent = cur;
+            // update existing displays
+            renderTransactions();
+            updateTotals();
+        }
+
+        applyNotif.addEventListener('click', async () => {
+            const v = notifSelect.value;
+            state.notif = v;
+            localStorage.setItem('bt_notif', v);
+            // make a placeholder call to backend to register user notification preference
+            try {
+                await fetch('/api/notify', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ notif: v })});
+                alert('Notification preference saved (backend placeholder called).');
+            } catch(e){
+                console.warn('notify endpoint not available', e);
+                alert('Saved locally. Backend endpoint not available (placeholder).');
+            }
+        });
+
+        backupBtn.addEventListener('click', async () => {
+            // Local JSON download
+            const payload = {
+                transactions: state.transactions,
+                savedAt: new Date().toISOString(),
+                currency: state.currency,
+                theme: state.theme
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+
+            // Optionally send to backend (placeholder)
+            try {
+                await fetch('/api/backup', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+                alert('Backup sent to server (placeholder).');
+            } catch(e){
+                console.warn('backup endpoint not available', e);
+                // Already downloaded locally; that's fine.
+            }
+        });
+
+        /* ====== FX / Markets (Hybrid) ====== */
+
+        async function loadFxRates(base = 'USD'){
+            // Try live exchangerate.host API; fallback to mock rates if fails
+            const url = `https://api.exchangerate.host/latest?base=${base}`;
+            try {
+                const res = await fetch(url, {cache:'no-store'});
+                if(!res.ok) throw new Error('fx fetch failed');
+                const json = await res.json();
+                // Normalise structure to { base, rates, date }
+                return { source:'live', base: json.base, rates: json.rates, date: json.date };
+            } catch(e){
+                console.warn('FX live fetch failed, using fallback mock rates.', e);
+                // Mock reasonable fallback conversion rates
+                const mock = getMockFx(base);
+                return { source:'mock', base: base, rates: mock, date: new Date().toISOString().slice(0,10) };
+            }
+        }
+
+        function getMockFx(base){
+            // Hard-coded representative rates (not financial advice)
+            const map = {
+                USD: { USD:1, KES:155.0, EUR:0.92, GBP:0.78, JPY:151.0, NGN:1180.0 },
+                KES: { USD:1/155, KES:1, EUR:0.92/155, GBP:0.78/155, JPY:151/155, NGN:1180/155 },
+                EUR: { USD:1.08, KES:1.08*155, EUR:1, GBP:0.85, JPY:164, NGN:1274 },
+                GBP: { USD:1.28, KES:1.28*155, EUR:1.18, GBP:1, JPY:193, NGN:1450 }
+            };
+            return map[base] || map['USD'];
+        }
+
+        function renderFxUI(){
+            const fx = state.fxRates;
+            if(!fx) return;
+            fxTable.innerHTML = '';
+            const targets = ['USD','KES','EUR','GBP','JPY','NGN'];
+            targets.forEach(t => {
+                if(t === fx.base) return;
+                const rate = fx.rates[t] ? Number(fx.rates[t]) : (getMockFx(fx.base)[t] || 0);
+                const change = (Math.random()*2 -1).toFixed(2); // simulated short-change
+                fxTable.insertAdjacentHTML('beforeend', `<tr><td>${fx.base}/${t}</td><td>${Number(rate).toFixed(4)}</td><td class="${change>=0 ? 'badge-success':'badge-danger'}">${change}%</td></tr>`);
+            });
+            // render fx chart (simple)
+            const fxLabels = targets.filter(x=>x!==fx.base);
+            const fxValues = fxLabels.map(l => fx.rates[l] ? +fx.rates[l] : +getMockFx(fx.base)[l]);
+            updateChartData('fxChart', fxLabels, fxValues);
+        }
+
+        function getMockMMF(){
+            return [
+                { name:'StableYield MMF', yield7d: (Math.random()*1.2+0.2).toFixed(2), action:'Buy' },
+                { name:'GovSec Money Fund', yield7d: (Math.random()*0.8+0.15).toFixed(2), action:'Hold' },
+                { name:'ShortTerm Cash Fund', yield7d: (Math.random()*0.6+0.08).toFixed(2), action:'Consider' }
+            ];
+        }
+
+        function renderMMF(){
+            mmfTable.innerHTML = '';
+            state.markets.mmf.forEach(f=> mmfTable.insertAdjacentHTML('beforeend', `<tr><td>${f.name}</td><td>${f.yield7d}%</td><td><button class="btn btn-primary" onclick="alert('Simulated buy: ${f.name}')">Buy</button></td></tr>`));
+        }
+
+        async function loadMarkets(){
+            // Refresh FX and MMF
+            state.fxRates = await loadFxRates(state.currency);
+            renderFxUI();
+            state.markets.mmf = getMockMMF();
+            renderMMF();
+        }
+
+        refreshMarkets.addEventListener('click', loadMarkets);
+        fxBase.addEventListener('change', async ()=> {
+            const base = fxBase.value;
+            state.fxRates = await loadFxRates(base);
+            renderFxUI();
+        });
+
+        /* ====== Stocks (Hybrid fetch) ====== */
+        function getMockStock(ticker){
+            // Simulate stock price times series
+            const base = Math.random()*200 + 20;
+            const series = Array.from({length:12}, (_,i)=> +(base + Math.sin(i/2)*5 + (Math.random()-0.5)*6).toFixed(2));
+            return { ticker: ticker.toUpperCase(), price: series[series.length-1], series, change: ((series[series.length-1]-series[0])/series[0]*100).toFixed(2) };
+        }
+
+        async function fetchStock(ticker){
+            // Try live via financialmodelingprep (demo) or fallback to mock
+            const api1 = `https://financialmodelingprep.com/api/v3/quote-short/${ticker.toUpperCase()}?apikey=demo`;
+            try {
+                const res = await fetch(api1);
+                if(res.ok){
+                    const j = await res.json();
+                    if(j && j.length){
+                        const price = j[0].price;
+                        // create series mock around price
+                        const series = Array.from({length:12}, (_,i)=> +(price * (1 + (Math.random()-0.5)*0.08)).toFixed(2));
+                        return { ticker: ticker.toUpperCase(), price: price, series, change: ((series[series.length-1]-series[0])/series[0]*100).toFixed(2), source:'live' };
+                    }
+                }
+                throw new Error('no live data');
+            } catch(e){
+                console.warn('stock live fetch failed, using mock', e);
+                const mock = getMockStock(ticker);
+                return { ...mock, source:'mock' };
+            }
+        }
+
+        fetchStockBtn.addEventListener('click', async ()=>{
+            const t = stockSymbolInput.value.trim();
+            if(!t) { alert('Enter ticker'); return; }
+            stockStatus.textContent = 'Fetching...';
+            const s = await fetchStock(t);
+            stockStatus.textContent = s.source === 'live' ? 'Live' : 'Simulated';
+            // render table and chart
+            addOrUpdateStockRow(s);
+            updateChartData('stockChart', s.series.map((_,i)=>`-${11-i}d`), s.series);
+        });
+
+        function addOrUpdateStockRow(s){
+            // check existing row
+            const exists = stockTable.querySelector(`[data-ticker="${s.ticker}"]`);
+            if(exists) exists.remove();
+            stockTable.insertAdjacentHTML('beforeend', `<tr data-ticker="${s.ticker}"><td>${s.ticker}</td><td>${formatCurrency(s.price, state.currency)}</td><td class="${s.change>=0?'badge-success':'badge-danger'}">${s.change}%</td><td><button class="btn btn-primary" onclick="simulateTrade('${s.ticker}')">Buy / Sell</button></td></tr>`);
+        }
+
+        window.simulateTrade = function(ticker){
+            alert('Simulated trading interface for ' + ticker + '. Integrate backend to enable real trading.');
+        };
+
+        /* ====== Charts Layer ====== */
+        const chartRegistry = {};
+        function setupCharts(){
+            // Setup empty charts for each canvas
+            chartRegistry.cashflowChart = createChart('cashflowChart', 'line', ['Jan','Feb','Mar','Apr','May','Jun'], 'Cashflow',[2000,2500,2300,2900,3100,3300]);
+            chartRegistry.expenseChart = createChart('expenseChart','doughnut',['Food','Housing','Transport','Health','Other'], 'Expenses',[500,1200,300,250,180]);
+            chartRegistry.networthChart = createChart('networthChart','line',['Jan','Feb','Mar','Apr','May','Jun'],'Net Worth',[12000,14000,15500,16700,18000,19500]);
+            chartRegistry.budgetCompareChart = createChart('budgetCompareChart','bar',['Food','Housing','Transport','Health'],'Budget',[500,1200,300,250]);
+            chartRegistry.trendChart = createChart('trendChart','line',['Jan','Feb','Mar','Apr','May','Jun'],'Spending',[4200,4150,4100,4050,3980,3920]);
+            chartRegistry.categoryChart = createChart('categoryChart','polarArea',['Food','Housing','Transport','Fitness','Health'],'Categories',[500,1200,300,120,250]);
+            chartRegistry.incomeExpenseChart = createChart('incomeExpenseChart','line',['Jan','Feb','Mar','Apr','May','Jun'],'Finance',[8500,8400,8600,8700,8900,9000]);
+            chartRegistry.fxChart = createChart('fxChart','bar',['EUR','GBP','KES','JPY','NGN'], 'Rates',[0.92,0.78,155,151,1180]);
+            chartRegistry.stockChart = createChart('stockChart','line', ['-11d','-10d','-9d','-8d','-7d','-6d','-5d','-4d','-3d','-2d','-1d','0d'], 'Price', Array.from({length:12},()=>Math.random()*100+50));
+        }
+
+        function createChart(id, type, labels, label, data, colors){
+            const ctx = document.getElementById(id).getContext('2d');
+            const cfg = {
+                type,
+                data: {
+                    labels,
+                    datasets: [{
+                        label,
+                        data,
+                        backgroundColor: Array.isArray(colors) ? colors : (typeof colors === 'string' ? [colors] : 'rgba(99,102,241,0.4)'),
+                        borderColor: 'rgba(255,255,255,0.06)',
+                        tension: 0.3,
+                        fill: type === 'line'
+                    }]
+                },
+                options: {
+                    responsive:true,
+                    plugins:{ legend:{ labels:{ color: getComputedStyle(document.body).getPropertyValue('--text-light') || '#fff' } } },
+                    scales:{ x:{ ticks:{ color: getComputedStyle(document.body).getPropertyValue('--text-light') || '#fff' } }, y:{ ticks:{ color: getComputedStyle(document.body).getPropertyValue('--text-light') || '#fff' } } }
+                }
+            };
+            return new Chart(ctx, cfg);
+        }
+
+        function updateChartData(id, labels, data){
+            const chart = chartRegistry[id];
+            if(!chart) return;
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = data;
+            chart.update();
+        }
+
+        function updateCharts(){
+            // update fx chart if rates available
+            if(state.fxRates){
+                const base = state.fxRates.base;
+                const labels = Object.keys(state.fxRates.rates).slice(0,6);
+                const data = labels.map(l => Number(state.fxRates.rates[l]));
+                updateChartData('fxChart', labels, data);
+            }
+        }
+
+        /* ====== Small helpers for markets ====== */
+        function getRandomPrice(){ return +(Math.random()*1000 + 10).toFixed(2); }
+
+        /* ====== Mock Data ====== */
+        function seedDemoTransactions(){
+            if(state.transactions.length) return;
+            state.transactions = [
+                { date:'2025-08-01', time:'10:00', desc:'Salary', party:'Employer', cat:'Income', method:'Bank Transfer', amt:3500.00, status:'Completed', notes:'Monthly salary', currency:'USD' },
+                { date:'2025-08-02', time:'13:20', desc:'Groceries', party:'Supermarket', cat:'Food', method:'Card', amt:-85.40, status:'Completed', notes:'Weekly groceries', currency:'USD' },
+                { date:'2025-08-03', time:'08:45', desc:'Fuel', party:'Station', cat:'Transport', method:'Card', amt:-40.00, status:'Completed', notes:'Car fuel', currency:'USD' }
+            ];
+            persistTx();
+        }
+
+        /* ====== Bind other UI events ====== */
+        function bindEvents(){
+            // market refresh handled above
+            document.getElementById('refreshMarkets').addEventListener('click', () => loadMarkets());
+            document.getElementById('applyCurrency').addEventListener('click', () => {
+                // handled earlier but keep for idempotency
+            });
+
+            // quick settings
+            document.getElementById('setGoal').addEventListener('click', ()=> alert('Set goal modal placeholder - implement when ready.'));
+            document.getElementById('investPlan').addEventListener('click', ()=> alert('Investment planner placeholder.'));
+            document.getElementById('budgetReview').addEventListener('click', ()=> alert('Budget review placeholder.'));
+            document.getElementById('riskAnalysis').addEventListener('click', ()=> alert('Risk analysis placeholder.'));
+
+            // open markets from header done earlier
+
+            // keyboard accessibility: escape closes modal
+            window.addEventListener('keydown', (e)=> {
+                if(e.key === 'Escape') closeModal(transactionModal);
+            });
+
+            // click outside modal to close
+            transactionModal.addEventListener('click', (e)=> { if(e.target === transactionModal) closeModal(transactionModal); });
+
+            // also hook open markets button
+            openMarketsBtn.addEventListener('click', ()=> { document.querySelector('.nav-item[data-section="markets"]').click(); });
+
+            // save/restore settings on change
+            document.getElementById('applyTheme').addEventListener('click', ()=> {
+                // applied earlier
+            });
+
+            // On page load seed demo tx for the first use
+            seedDemoTransactions();
+            renderTransactions();
+            updateTotals();
+        }
+
+        /* ====== Initialization call ====== */
+        init();
+
+        /* ====== Expose some functions for debug in console ====== */
+        window.bt = { state, fetchStock, loadMarkets, updateCharts };
+
+    })();
+    </script>
+</body>
+</html>

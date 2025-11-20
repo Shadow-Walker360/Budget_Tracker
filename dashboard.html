@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Comprehensive budget plan tracker with operational, strategic, analytics, and informational dashboards for financial management.">
+    <meta name="keywords" content="budget tracker, financial dashboard, expense management, budget planning, analytics">
+    <meta name="author" content="Shikisha Sweetness">
+    <title>Budget Tracker Dashboard | Shikisha Sweetness</title>
+    
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-dark: #0f172a;
+            --bg-mid: #1e293b;
+            --bg-light: #334155;
+            --card-bg: #1e293b;
+            --text-light: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #475569;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 280px;
+            background: var(--bg-mid);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .logo h2 {
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-muted);
+        }
+
+        .nav-item:hover {
+            background: var(--bg-light);
+            color: var(--text-light);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 30px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
+            background: var(--bg-mid);
+            border-radius: 8px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: var(--bg-mid);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Dashboard Sections */
+        .dashboard-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .dashboard-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: var(--accent);
+            opacity: 0.1;
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-title {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        /* Chart Cards */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        /* Progress Bars */
+        .progress-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .progress-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--bg-light);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        /* Table */
+        .data-table {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .table-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 16px 24px;
+            text-align: left;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        tr {
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-light);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        /* Canvas Chart Styling */
+        canvas {
+            max-height: 300px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-280px);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Alert Box */
+        .alert-box {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid var(--info);
+            color: var(--info);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .action-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .action-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+        }
+
+        .action-card i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        .action-card h4 {
+            margin-bottom: 4px;
+        }
+
+        .action-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(15,23,42,0.7);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000000;
+}
+
+.modal-content {
+    background: var(--dark-700);
+    padding: 25px;
+    border-radius: 12px;
+    width: 350px;
+    color: #fff;
+}
+
+.modal input, .modal select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    background: var(--dark-800);
+    border: 1px solid var(--dark-600);
+    color: #fff;
+    border-radius: 8px;
+}
+.modal button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.modal button:hover {
+    background: var(--primary-dark);
+}
+
+
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class='bx bx-wallet'></i>
+            <h2>Budget Tracker</h2>
+        </div>
+
+        <nav>
+            <div class="nav-item active" data-section="operational">
+                <i class='bx bx-tachometer'></i>
+                <span>Operational</span>
+            </div>
+            <div class="nav-item" data-section="strategic">
+                <i class='bx bx-target-lock'></i>
+                <span>Strategic</span>
+            </div>
+            <div class="nav-item" data-section="analytics">
+                <i class='bx bx-bar-chart-alt-2'></i>
+                <span>Analytics</span>
+            </div>
+            <div class="nav-item" data-section="informational">
+                <i class='bx bx-info-circle'></i>
+                <span>Informational</span>
+            </div>
+            <div class="nav-item" data-section="settings">
+                <i class='bx bx-cog'></i>
+                <span>Settings</span>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <i class='bx bx-menu menu-toggle' id="menuToggle"></i>
+                <h1>Dashboard</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary">
+                    <i class='bx bx-plus'></i>
+                    Add Transaction
+                </button>
+                <div class="user-profile">
+                    <div class="user-avatar">SS</div>
+                    <span>Shikisha</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Operational Dashboard -->
+        <section class="dashboard-section active" id="operational">
+            <div class="alert-box alert-warning">
+                <i class='bx bx-error-circle' style="font-size: 1.5rem;"></i>
+                <span><strong>Budget Alert:</strong> You've spent 85% of your monthly food budget.</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Balance</span>
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.2); color: var(--success);">
+                            <i class='bx bx-wallet'></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">$12,458.50</div>
+                    <div class="stat-change positive">
+                        <i class='bx bx-up-arrow-alt'></i>
+                        +12.5% from last month
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Income</span>
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.2); color: var(--info);">
+                            <i class='bx bx-trending-up'></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">$8,500.00</div>
+                    <div class="stat-change positive">
+                        <i class='bx bx-up-arrow-alt'></i>
+                        +5.2% this month
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Expenses</span>
+                        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.2); color: var(--danger);">
+                            <i class='bx bx-trending-down'></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">$4,235.80</div>
+                    <div class="stat-change negative">
+                        <i class='bx bx-down-arrow-alt'></i>
+                        +8.3% this month
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Savings</span>
+                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.2); color: var(--secondary);">
+                            <i class='bx bx-money'></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">$4,264.20</div>
+                    <div class="stat-change positive">
+                        <i class='bx bx-up-arrow-alt'></i>
+                        50.2% savings rate
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Monthly Cashflow</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="cashflowChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Expense Breakdown</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">
+                    <h3>Recent Transactions</h3>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTable">
+                        <!-- Will be populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Strategic Dashboard -->
+        <section class="dashboard-section" id="strategic">
+            <div class="alert-box alert-info">
+                <i class='bx bx-info-circle' style="font-size: 1.5rem;"></i>
+                <span><strong>Goal Update:</strong> You're on track to reach your emergency fund goal in 3 months!</span>
+            </div>
+
+            <div class="quick-actions">
+                <div class="action-card">
+                    <i class='bx bx-target-lock'></i>
+                    <h4>Set New Goal</h4>
+                    <p>Create financial goals</p>
+                </div>
+                <div class="action-card">
+                    <i class='bx bx-line-chart'></i>
+                    <h4>Investment Plan</h4>
+                    <p>Review investments</p>
+                </div>
+                <div class="action-card">
+                    <i class='bx bx-calendar'></i>
+                    <h4>Budget Review</h4>
+                    <p>Monthly planning</p>
+                </div>
+                <div class="action-card">
+                    <i class='bx bx-shield'></i>
+                    <h4>Risk Analysis</h4>
+                    <p>Financial security</p>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Financial Goals Progress</h3>
+                    </div>
+                    <div class="progress-list">
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Emergency Fund</span>
+                                <strong>$8,500 / $10,000</strong>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%; background: var(--success);"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Vacation Fund</span>
+                                <strong>$3,200 / $5,000</strong>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 64%; background: var(--info);"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>New Car</span>
+                                <strong>$12,000 / $30,000</strong>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 40%; background: var(--warning);"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span>Retirement</span>
+                                <strong>$45,000 / $500,000</strong>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 9%; background: var(--secondary);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Net Worth Growth</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="networthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Budget vs Actual (Current Month)</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="budgetCompareChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Dashboard -->
+        <section class="dashboard-section" id="analytics">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Avg Monthly Spending</span>
+                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.2); color: var(--warning);">
+                            <i class='bx bx-chart'></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">$4,125.50</div>
+                    <div class="stat-change negative">
+                        <i class='bx bx-down-arrow-alt'></i>
+                        -3.2% vs 6mo avg
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Largest Expense</span>
+                        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.2); color: var(--danger);">
+                            <i class='bx bx-home'></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">$1,200</div>
+                    <div class="stat-change">
+                        Housing (Rent)
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Spending Trend</span>
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.2); color: var(--success);">
+                            <i class='bx bx-trending-down'></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">Decreasing</div>
+                    <div class="stat-change positive">
+                        <i class='bx bx-up-arrow-alt'></i>
+                        Good progress!
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Days to Next Goal</span>
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.2); color: var(--info);">
+                            <i class='bx bx-calendar'></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">87 days</div>
+                    <div class="stat-change">
+                        Emergency Fund
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Spending Trends (6 Months)</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Category Analysis</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Income vs Expenses Over Time</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="incomeExpenseChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Informational Dashboard -->
+        <section class="dashboard-section" id="informational">
+            <div class="quick-actions">
+                <div class="action-card">
+                    <i class='bx bx-book-open'></i>
+                    <h4>Budget Guide</h4>
+                    <p>Learn budgeting basics</p>
+                </div>
+                <div class="action-card">
+                    <i class='bx bx-download'></i>
+                    <h4>Export Data</h4>
+                    <p>Download reports</p>
+                </div>
+                <div class="action-card">
+                    <i class='bx bx-help-circle'></i>
+                    <h4>Help Center</h4>
+                    <p>Get support</p>
+                </div>
+                <div class="action-card">
+                    <i class='bx bx-bell'></i>
+                    <h4>Notifications</h4>
+                    <p>Manage alerts</p>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">
+                    <h3>Budget Categories Overview</h3>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Budget</th>
+                            <th>Spent</th>
+                            <th>Remaining</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class='bx bx-home'></i> Housing</td>
+                            <td>$1,200</td>
+                            <td>$1,200</td>
+                            <td>$0</td>
+                            <td><span class="badge badge-success">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td><i class='bx bx-food-tag'></i> Food</td>
+                            <td>$500</td>
+                            <td>$425</td>
+                            <td>$75</td>
+                            <td><span class="badge badge-warning">85% Used</span></td>
+                        </tr>
+                        <tr>
+                            <td><i class='bx bx-car'></i> Transportation</td>
+                            <td>$300</td>
+                            <td>$180</td>
+                            <td>$120</td>
+                            <td><span class="badge badge-success">Good</span></td>
+                        </tr>
+                        <tr>
+                            <td><i class='bx bx-heart'></i> Healthcare</td>
+                            <td>$250</td>
+                            <td>$140</td>
+                            <td>$110</td>
+                            <td><span class="badge badge-success">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td><i class='bx bx-dumbbell'></i> Fitness</td>
+                            <td>$120</td>
+                            <td>$60</td>
+                            <td>$60</td>
+                            <td><span class="badge badge-success">Healthy</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Settings Dashboard -->
+        <section class="dashboard-section" id="settings">
+            <div class="data-table">
+                <div class="table-header">
+                    <h3>Settings & Preferences</h3>
+                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Theme</td>
+                            <td>Dark Mode</td>
+                            <td><button class="btn btn-primary">Change</button></td>
+                        </tr>
+                        <tr>
+                            <td>Currency</td>
+                            <td>USD ($)</td>
+                            <td><button class="btn btn-primary">Edit</button></td>
+                        </tr>
+                        <tr>
+                            <td>Notifications</td>
+                            <td>Enabled</td>
+                            <td><button class="btn btn-primary">Configure</button></td>
+                        </tr>
+                        <tr>
+                            <td>Backup Data</td>
+                            <td>Local + Cloud</td>
+                            <td><button class="btn btn-primary">Backup</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Add Transaction Modal -->
+            <div id="transactionModal" class="modal">
+                <div class="modal-content">
+                    <h3>Add Transaction</h3>
+                    <label>Date</label>
+                    <input type="date" id="tDate">
+                    
+                    <label>Description</label>
+                    <input type="text" id="tDesc">
+
+                    <label>Category</label>
+                    <input type="text" id="tCat">
+
+                    <label>Amount</label>
+                    <input type="number" id="tAmt">
+
+                    <label>Status</label>
+                    <select id="tStatus">
+                        <option value="Completed">Completed</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Received">Received</option>
+                    </select>
+
+                    <button id="saveTransaction" class="btn btn-primary">Save</button>
+                    <button id="closeTransaction" class="btn btn-danger">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Settings Modal -->
+            <div id="settingsModal" class="modal">
+                <div class="modal-content">
+                    <h3>Settings</h3>
+
+                    <div id="settingsContent"></div>
+
+                    <button id="closeSettings" class="btn btn-danger">Close</button>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Sidebar Navigation
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('.dashboard-section');
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menuToggle');
+        const mainContent = document.getElementById('mainContent');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+
+                const target = item.getAttribute('data-section');
+
+                sections.forEach(section => {
+                    if (section.id === target) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // Mobile Sidebar Toggle
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('expanded');
+        });
+
+        // Transaction Data
+        const transactions = [
+            { date: "2025-02-01", description: "Groceries", category: "Food", amount: -80.25, status: "Completed" },
+            { date: "2025-02-02", description: "Fuel", category: "Transportation", amount: -40.00, status: "Completed" },
+            { date: "2025-02-03", description: "Salary", category: "Income", amount: 3500.00, status: "Received" },
+            { date: "2025-02-04", description: "Restaurant", category: "Food", amount: -25.00, status: "Completed" },
+            { date: "2025-02-05", description: "Gym Membership", category: "Fitness", amount: -50.00, status: "Pending" }
+        ];
+
+        const tableBody = document.getElementById('transactionsTable');
+
+        function loadTransactions() {
+            tableBody.innerHTML = "";
+            transactions.forEach(t => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${t.date}</td>
+                        <td>${t.description}</td>
+                        <td>${t.category}</td>
+                        <td style="color:${t.amount < 0 ? 'var(--danger)' : 'var(--success)'};">
+                            ${t.amount < 0 ? '-' : '+'}$${Math.abs(t.amount).toFixed(2)}
+                        </td>
+                        <td>
+                            <span class="badge ${
+                                t.status === "Completed" ? "badge-success" :
+                                t.status === "Pending" ? "badge-warning" :
+                                "badge-info"
+                            }">${t.status}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        loadTransactions();
+
+        // Charts
+        function createChart(id, type, labels, datasetLabel, data, bgColors) {
+            new Chart(document.getElementById(id), {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: datasetLabel,
+                        data: data,
+                        backgroundColor: bgColors,
+                        borderColor: "rgba(255,255,255,0.1)",
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: "#f1f5f9" }}},
+                    scales: {
+                        x: { ticks: { color: "#f1f5f9" }},
+                        y: { ticks: { color: "#f1f5f9" }}
+                    }
+                }
+            });
+        }
+
+        // ===== MODAL LOGIC =====
+const transactionModal = document.getElementById("transactionModal");
+const settingsModal = document.getElementById("settingsModal");
+const addTransactionBtn = document.getElementById("addTransactionBtn");
+const closeTransactionBtn = document.getElementById("closeTransaction");
+const saveTransactionBtn = document.getElementById("saveTransaction");
+const settingsButtons = document.querySelectorAll("#settings table button");
+const settingsContent = document.getElementById("settingsContent");
+const closeSettings = document.getElementById("closeSettings");
+
+// Open Add Transaction Modal
+addTransactionBtn.addEventListener("click", () => {
+    transactionModal.style.display = "flex";
+});
+
+// Close Transaction Modal
+closeTransactionBtn.addEventListener("click", () => {
+    transactionModal.style.display = "none";
+});
+
+// Save Transaction + Refresh Table + Save to LocalStorage
+saveTransactionBtn.addEventListener("click", () => {
+    const t = {
+        date: tDate.value,
+        description: tDesc.value,
+        category: tCat.value,
+        amount: parseFloat(tAmt.value),
+        status: tStatus.value
+    };
+
+    if (!t.date || !t.description || !t.amount) {
+        alert("Please fill all fields.");
+        return;
+    }
+
+    transactions.push(t);
+    localStorage.setItem("transactions", JSON.stringify(transactions));
+
+    loadTransactions();
+    transactionModal.style.display = "none";
+});
+
+// Load From LocalStorage on Start
+if (localStorage.getItem("transactions")) {
+    const saved = JSON.parse(localStorage.getItem("transactions"));
+    transactions.push(...saved);
+    loadTransactions();
+}
+
+// ===== SETTINGS =====
+settingsButtons.forEach((btn, index) => {
+    btn.addEventListener("click", () => {
+        settingsModal.style.display = "flex";
+
+        if (index === 0) {
+            settingsContent.innerHTML = `
+                <h4>Choose Theme</h4>
+                <button class="btn btn-primary" id="darkMode">Dark Mode</button>
+                <button class="btn btn-primary" id="lightMode">Light Mode</button>
+            `;
+
+            document.getElementById("darkMode").onclick = () => {
+                document.body.style.background = "#0f172a";
+            };
+
+            document.getElementById("lightMode").onclick = () => {
+                document.body.style.background = "#f1f5f9";
+            };
+
+        } else if (index === 1) {
+            settingsContent.innerHTML = `
+                <h4>Select Currency</h4>
+                <select id="currencySelect">
+                    <option>USD ($)</option>
+                    <option>EUR (€)</option>
+                    <option>GBP (£)</option>
+                    <option>JPY (¥)</option>
+                </select>
+            `;
+        } else if (index === 2) {
+            settingsContent.innerHTML = `
+                <h4>Notifications</h4>
+                <button class="btn btn-primary">Enable</button>
+                <button class="btn btn-danger">Disable</button>
+            `;
+        } else if (index === 3) {
+            settingsContent.innerHTML = `
+                <h4>Backup</h4>
+                <button class="btn btn-primary" id="backupBtn">Backup Now</button>
+            `;
+
+            document.getElementById("backupBtn").onclick = () => {
+                const blob = new Blob(
+                    [JSON.stringify(transactions, null, 2)],
+                    { type: "application/json" }
+                );
+
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "backup.json";
+                a.click();
+            };
+        }
+    });
+});
+
+closeSettings.onclick = () => settingsModal.style.display = "none";
+
+
+        // Cashflow Chart
+        createChart(
+            "cashflowChart",
+            "line",
+            ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+            "Cashflow",
+            [2000, 2500, 2300, 2900, 3100, 3300],
+            "rgba(99,102,241,0.4)"
+        );
+
+        // Expense Breakdown
+        createChart(
+            "expenseChart",
+            "doughnut",
+            ["Food", "Housing", "Transport", "Health", "Other"],
+            "Expenses",
+            [500, 1200, 300, 250, 180],
+            [
+                "rgba(239,68,68,0.7)",
+                "rgba(59,130,246,0.7)",
+                "rgba(245,158,11,0.7)",
+                "rgba(16,185,129,0.7)",
+                "rgba(139,92,246,0.7)"
+            ]
+        );
+
+        // Net Worth Chart
+        createChart(
+            "networthChart",
+            "line",
+            ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+            "Net Worth",
+            [12000, 14000, 15500, 16700, 18000, 19500],
+            "rgba(16,185,129,0.5)"
+        );
+
+        // Budget Compare Chart
+        createChart(
+            "budgetCompareChart",
+            "bar",
+            ["Food", "Housing", "Transport", "Health"],
+            "Comparison",
+            [500, 1200, 300, 250],
+            "rgba(99,102,241,0.7)"
+        );
+
+        // Spending Trend Chart
+        createChart(
+            "trendChart",
+            "line",
+            ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+            "Spending",
+            [4200, 4150, 4100, 4050, 3980, 3920],
+            "rgba(245,158,11,0.4)"
+        );
+
+        // Category Analysis
+        createChart(
+            "categoryChart",
+            "polarArea",
+            ["Food", "Housing", "Transport", "Fitness", "Health"],
+            "Categories",
+            [500, 1200, 300, 120, 250],
+            [
+                "rgba(239,68,68,0.7)",
+                "rgba(59,130,246,0.7)",
+                "rgba(245,158,11,0.7)",
+                "rgba(139,92,246,0.7)",
+                "rgba(16,185,129,0.7)"
+            ]
+        );
+
+        // Income vs Expenses Over Time
+        createChart(
+            "incomeExpenseChart",
+            "line",
+            ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+            "Finance",
+            [8500, 8400, 8600, 8700, 8900, 9000],
+            "rgba(59,130,246,0.4)"
+        );
+
+    </script>
+</body>
+</html>
